@@ -1,6 +1,11 @@
 import pandas as pd
-from fastapi import FastAPI
+import numpy as np
+from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from tensorflow.keras.models import load_model
+#import python-multipart
+import cv2
+import io
 
 app = FastAPI()
 
@@ -16,37 +21,61 @@ app.add_middleware(
 
 #test http://127.0.0.1:8000/predict?dummy_feature1=2&dummy_feature2=6
 
+@app.post("/predict")
 
-#app.state.model = load_model()
-
-@app.get("/predict")
-
-def predict(
-        dummy_feature1: float,
-        dummy_feature2: float,
+async def predict(
+        img: UploadFile=File(...)
     ):
+
+    contents = await img.read()
+
+    nparr = np.fromstring(contents, np.uint8)
+
+    #nparr_preprocessed = nparr/255
+
+    cv2_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR) # type(cv2_img) => numpy.ndarray
+
+    cv2_img = cv2_img/255
+
+    desired_shape = (32, 32, 3)
+
+    resized_img = cv2.resize(cv2_img, dsize = (desired_shape[1], desired_shape[0]))
+
+    resized_img = np.expand_dims(resized_img,axis=0)
+
+    print("NPARRAY SHAPE HEREEEEEEE----------------------------------")
+    print(nparr.shape)
+    #print(nparr_preprocessed)
 
     """Function that makes the prediction of LibrAI and feeds the API"""
 
-    #Dummy API - to test
+    # Load the model
 
-    X = pd.DataFrame(locals(), index=[0], columns = ["dummy_feature1","dummy_feature2"])
+    model = load_model("model_v1")
 
-    y_pred = X["dummy_feature1"] + X["dummy_feature2"]
+    y_pred = model.predict(resized_img)
 
+    labels = ['airplane',
+          'automobile',
+          'bird',
+          'cat',
+          'deer',
+          'dog',
+          'frog high on DMT',
+          'horse',
+          'ship',
+          'truck']
 
-    # Complete after model is done
-    
-    ## DataFrame creating and preprocessing
+    max_index = np.argmax(y_pred,axis=1)
 
-    pass #X_pred = pd.DataFrame(locals(), index=[0])
-    pass #model = app.state.model
+    translated_result = labels[max_index[0]]
 
-    pass #X_processed = preprocess_features(X_pred)
-    pass #y_pred = model.predict(X_processed)
+    print("-------------------------------------------")
+    print(max_index)
 
+    return {"image array": translated_result}
 
-    return dict(dummy_prediction=float(y_pred))
+    #return dict(dummy_prediction=float(y_pred))
 
 @app.get("/")
 def root():
