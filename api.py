@@ -19,8 +19,6 @@ app.add_middleware(
     allow_headers=["*"],  # Allows all headers
 )
 
-#test http://127.0.0.1:8000/predict?dummy_feature1=2&dummy_feature2=6
-
 @app.post("/predict")
 
 async def predict(
@@ -35,7 +33,7 @@ async def predict(
 
     cv2_img = cv2_img/255
 
-    desired_shape = (32, 32, 3)
+    desired_shape = (64, 64, 3)
 
     resized_img = cv2.resize(cv2_img, dsize = (desired_shape[1], desired_shape[0]))
 
@@ -49,23 +47,16 @@ async def predict(
 
     y_pred = model.predict(resized_img)
 
-    labels = ['airplane',
-          'automobile',
-          'bird',
-          'cat',
-          'deer',
-          'dog',
-          'frog high on DMT',
-          'horse',
-          'ship',
-          'truck']
+    labels = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'I', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y']
 
     max_index = np.argmax(y_pred,axis=1)
 
     translated_result = labels[max_index[0]]
 
     print("-------------------------------------------")
+    print(y_pred)
     print(max_index)
+    print(resized_img)
 
     return {"prediction": translated_result}
 
