@@ -31,8 +31,6 @@ async def predict(
 
     nparr = np.fromstring(contents, np.uint8)
 
-    #nparr_preprocessed = nparr/255
-
     cv2_img = cv2.imdecode(nparr, cv2.IMREAD_COLOR) # type(cv2_img) => numpy.ndarray
 
     cv2_img = cv2_img/255
@@ -42,10 +40,6 @@ async def predict(
     resized_img = cv2.resize(cv2_img, dsize = (desired_shape[1], desired_shape[0]))
 
     resized_img = np.expand_dims(resized_img,axis=0)
-
-    print("NPARRAY SHAPE HEREEEEEEE----------------------------------")
-    print(nparr.shape)
-    #print(nparr_preprocessed)
 
     """Function that makes the prediction of LibrAI and feeds the API"""
 
@@ -73,7 +67,7 @@ async def predict(
     print("-------------------------------------------")
     print(max_index)
 
-    return {"image array": translated_result}
+    return {"prediction": translated_result}
 
     #return dict(dummy_prediction=float(y_pred))
 
