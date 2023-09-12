@@ -8,5 +8,7 @@ RUN pip install -r requirements.txt
 
 COPY api api
 
-CMD uvicorn api.fast:app --host 0.0.0.0 --port 8000
+COPY ssl ssl
+
+CMD uvicorn api.fast:app --host 0.0.0.0 --port 443 --ssl-keyfile ssl/privkey.pem --ssl-certfile ssl/fullchain.pem
 # $DEL_END
